@@ -1,0 +1,71 @@
+//@app.route('/api/jobposts', methods=['GET', 'POST'])
+
+// empty array means all
+post request:
+{
+	"keywords": [],
+	"region_ids": "[]",
+	"su_region": true,
+	"city_ids": "[]",
+	"su_city": true,
+	"company_ids": "[]",
+	"su_company": true,
+	"job_type_ids": "[]",
+	"su_job_type": true,
+	"job_precentage": 
+		{
+		"lower": 0,
+		"upper": 100
+		},
+	"su_job_type": true
+}
+
+response:
+[
+  {
+    "id": 1,
+    "groupName": "abc",
+    "groupLink": "https:\/\/www.google.com",
+    "postContent": "This is a post number 1",
+    "jobType"	: "full"
+    "precentage" : "100",
+    "region:": "merkaz",
+    "city": "tel aviv"
+  },
+  {
+    "id": 2,
+    "groupName": "def",
+    "groupLink": "https:\/\/www.google.com",
+    "postContent": "This is a post number 2"
+    "precentage" : "",
+    "jobType"	: "temp"
+    "precentage" : "",
+    "region:": "merkaz",
+    "city": ""
+  }
+]
+
+//@app.route('/api/groups', methods=['GET'])
+response:
+[
+	{
+		
+		"url" : "https:\/\/www.google.com"
+	}
+]
+
+//@app.route('/api/addgroup', methods=['POST'])
+request:
+{
+	"url" : "https:\/\/www.google.com"
+}
+no response - show user message "the group was added and will appear soon"
+
+//@app.route('/manager/addgroup', methods=['POST'])
+request:
+{
+	"url" : "https:\/\/www.google.com"
+}
+no response - show user message "the group was added and will appear soon"
+
+
