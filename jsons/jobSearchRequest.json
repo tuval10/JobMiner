@@ -14,8 +14,8 @@ post request:
 	"su_job_type": true,
 	"job_precentage": 
 		{
-		"lower": 0,
-		"upper": 100
+		"min": 0,
+		"max": 100
 		},
 	"su_job_type": true
 }

@@ -42,7 +42,6 @@ var Page = React.createClass({
 		return(
 			<div className='page'>
 				<SearchBar onSearchSubmit={this.onSubmitSearchQuery}/>
-				<div className="after-search"></div>
 				<JobPostList data={this.state.data} />
 			</div>
 		);
@@ -63,9 +62,18 @@ var SearchBar = React.createClass({
 			var listJsonObj = {};
 			newJson[list[0]] = jsonObj;
 		});
-		console.log(newJson);
 		
 		return newJson;
+	},
+	onlyPartTimeJobChecked: function(){
+		var jobtypesChosen = this.state[[itemLists[0][0]]].data.filter( item => item.checked);
+		if(jobtypesChosen.length != 1)
+			return false;
+		return jobtypesChosen[0].id == 2;
+	},
+	handleSliderVisibility: function(){
+		document.getElementById('sliderDiv').style['visibility'] = 
+			(! this.onlyPartTimeJobChecked()) ? 'hidden' : 'visible';
 	},
 	clearSearchBar: function(){
 		var newState = this.state;
@@ -78,8 +86,6 @@ var SearchBar = React.createClass({
 			newState[list[0]].data = listChecked;
 			newState[list[0]].includeUndef = true;
 		});
-		console.log("newState");
-		console.log(newState);
 		this.replaceState(newState);
 	},
 	updateList: function(listName, listData, includeUndef){
@@ -87,10 +93,12 @@ var SearchBar = React.createClass({
 		newState[listName] = {};
 		newState[listName].data = listData;
 		newState[listName].includeUndef = includeUndef;
+		if(listName == 'jobtypes')
+			this.handleSliderVisibility();
 		this.setState(newState);
 	},
 	loadListsFromServer: function(){
-		async.each(itemLists,function(list,i){
+		itemLists.forEach( list => {
 			$.ajax({
 				url: '/api/' + list[0],
 				dataType: 'json',
@@ -106,7 +114,7 @@ var SearchBar = React.createClass({
 					console.error(this.props.url, status, err.toString());
 				}.bind(this)		
 			});
-		}.bind(this));	
+		});	
 	},
 	componentDidMount: function(){
 		this.loadListsFromServer();
@@ -127,12 +135,16 @@ var SearchBar = React.createClass({
 			var listRequestData = this.formatListData(this.state[list[0]]);
 			if(listRequestData.length != 0 || !this.state[list[0]].includeUndef)
 			{
-				console.log(listRequestData);
 				request[list[0]] = {};
 				request[list[0]].data = listRequestData;
 				request[list[0]].includeUndef = this.state[list[0]].includeUndef;
 			}
 		});
+		if(this.onlyPartTimeJobChecked()){
+			request.job_precentage = {};
+			request.job_precentage['min'] = document.getElementById('value-min').innerHTML;
+			request.job_precentage['max'] = document.getElementById('value-max').innerHTML;
+		}
 		this.props.onSearchSubmit(request, this.clearSearchBar);	
 	},
 	handleOptionToggle: function(listName, item_id){
@@ -166,7 +178,12 @@ var SearchBar = React.createClass({
 			<div className='searchbar'>
 				<SearchLine value={this.state.keywords} onChange={this.handleKeywordsChange}/>
 				{itemListsNodes}
-		  		<div className='menu-item menu-button'>מד</div>
+				 <div id='sliderDiv' className='sliderWrapper'>
+				  	<div><span id="value-min" className='sliderValue'></span></div>
+				  	<div id='range'></div>
+					<div><span id="value-max" className='sliderValue'></span></div>
+					<div className='precentage-word'>אחוז משרה:</div>
+				</div>
 		  		<div className='menu-item menu-button' onClick={this.handleSubmit}>חפש</div>
 		  		<div className='menu-item menu-button'>הוסף קבוצה</div>
 			</div>
@@ -246,7 +263,7 @@ var JobPostList = React.createClass({
 	render: function(){
 		var jobPostNodes = this.props.data.map(function(jobPost){
 			return(
-				<JobPost key={jobPost.id} groupName={jobPost.groupName} groupLink={jobPost.groupLink} email={jobPost.email}>
+				<JobPost key={jobPost.id} data={jobPost}>
 					{jobPost.postContent}
 				</JobPost>
 				);
@@ -262,24 +279,46 @@ var JobPostList = React.createClass({
 
 
 var JobPost = React.createClass({
-	handlePostClick: function(event){
-	  	var win=window.open(this.props.groupLink, '_blank');
-  		win.focus();
+	handlePostClick: function(event, link){
+		if(link != undefined){
+		  	var win=window.open(link, '_blank');
+	  		win.focus();
+  		}
+	},
+	getOptionalPostDetails: function(){
+		var optional = [['jobType', 'סוג עבודה'], ['precentage', 'אחוז משרה'], ['region','אזור'], ['city','עיר'], ['email','מייל']];
+		var optionalNodes = optional.filter(field => (this.props.data[field[0]] != undefined && this.props.data[field[0]].length != 0))
+			.map( (field, i) => {
+				if (field[0] == 'email')
+					return(
+						<div key={i} className = 'jobDetails clickable' onClick={this.handlePostClick.bind(null, event, 'mailto:'+this.props.data.email)}>
+							{field[1] + ': '}
+							<u> {this.props.data[field[0]]} </u>
+						</div>
+						);
+				return (
+					<div className = 'jobDetails' key={i}>
+						{field[1] + ': ' + this.props.data[field[0]]}
+					</div>
+					);
+			});
+		return optionalNodes;
 	},
 	render: function(){
+		var optionalDetailsNode = this.getOptionalPostDetails();
+		
 		return(
 			<div className = 'jobPost' onClick={this.handlePostClick}>
-				<div className = 'groupName'>
-					<a className = 'groupLink' href={this.props.groupLink} target="_blank">
-						{this.props.groupName}
-					</a>
+				<div className = 'groupTitle'>
+					<div className = 'jobDetails clickable' onClick={this.handlePostClick.bind(null, event, this.props.data.groupLink)}>
+						<u>{this.props.data.groupName}</u>
+					</div>
+					{optionalDetailsNode}
 				</div>
-				<div className = 'groupName'>
-					<a className = 'emailLink' href={'mailto:'+this.props.email} target="_blank">
-						{this.props.email}
-					</a>
-				</div>
-				<div className = 'postContent'>
+				<div className = 'postContent'
+					style= {{direction: (this.props.data.language=='english' ? 'ltr' : 'rtl')}} 
+					onClick={this.handlePostClick.bind(null, event, this.props.data.groupLink+'permalink/'+this.props.data.postStoryNumber)}
+				>
 					{this.props.children}
 				</div>
 			</div>
@@ -292,3 +331,25 @@ ReactDOM.render(
 	<Page url='/api/jobposts' /> ,
 	document.getElementById('content')
 );
+
+// slider outside 
+var range = document.getElementById('range');
+noUiSlider.create(range, {
+	start: [ 0, 100 ], // Handle start position
+	step: 20, // Slider moves in increments of '10'
+	margin: 0, // Handles must be more than '20' apart
+	connect: true, // Display a colored bar between the handles
+	behaviour: 'tap-drag', // Move handle on tap, bar is draggable
+	range: { // Slider can select '0' to '100'
+		'min': 0,
+		'max': 100
+	}
+});
+
+var valueDivs = [document.getElementById('value-min'), document.getElementById('value-max')]
+
+// When the slider value changes, update the input and span
+range.noUiSlider.on('update', function( values, handle ) {
+	valueDivs[handle].innerHTML = values[handle].replace('.00','') + '%';
+});
+

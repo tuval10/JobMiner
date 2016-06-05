@@ -1,37 +1,42 @@
 [
   {
     "id": 1,
-    "groupName": "group number 1",
-    "groupLink": "https:\/\/www.google.com",
-    "postContent": "This is a post number 1. post number 1 text is long like hell. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no",
-    "jobType"	: "full",
+    "groupName": "משרות הייטק ושיווק ללא ניסיון",
+    "groupLink": "https://www.facebook.com/groups/no.experience/",
+    "postStoryNumber": "1043731955711840",
+    "postContent": "לחברת הייטק בינלאומית ברעננה דרוש/ה בוגר/ת קורס MCSA CCNA למשרת תמיכה בלקוחות החברה מהארץ ומחו''ל. התפקיד כולל תמיכה ברמת TIER 2במערכת חדשה שהוטמעה בחברה. המשרה מוגדרת זמנית לתקופה של 8 חודשים- שנה עם אופציה ממשית להמשך. דרישות: בוגר/ת קורס MCSA /CCNA- חובה אנגלית ברמה גבוהה- חובה ניסיון בתמיכה טכנית / HELP DESK- יתרון  נכונות לעבודה בשעות 9:00-18:00, 15:00-24:00 זמינות מידית- יתרון משמעותי  קו''ח: tal@matchpointiit.com",
+    "jobType"	: "temp",
     "precentage" : "100",
-    "region:": "merkaz",
-    "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "region:": "",
+    "city": "",
+    "email": "tal@matchpointiit.com",
+    "language": "hebrew"
   },
   {
     "id": 2,
-    "groupName": "group number 2",
-    "groupLink": "https:\/\/www.google.com",
-    "postContent": "This is a post number 2. yay!",
+    "groupName": "משרות מחברות היי-טק בישראל",
+    "groupLink": "https://www.facebook.com/groups/israel.hitech.jobs/",
+    "postStoryNumber": "10153447630395807",
+    "postContent": "Continuity Software is looking for a Professional Services Engineer Description: • A Solution Specialist responsible for technical account management and for providing post-sales services such as deployment, integration and training • Manage Proof-of-Concept activities as part of the sales cycle • Work with large international enterprises Required: • Experience in providing hands-on technical services for a datacenter Software solution (1 year +) • Experience in working with customers abroad (1 year +) • Proven project, process and people management skills • HA/DR, Unix System, Storage Management or in-depth virtualization background • Excellent presentation and interpersonal skills • Willingness to travel abroad frequently • Fluent in English Location: Tel Aviv. Please send CV to: TaliA@continuitysoftware.com",
+    "jobType"	: "",
     "precentage" : "",
-    "jobType"	: "temp",
-    "precentage" : "",
-    "region:": "merkaz",
-    "city": "",
-    "email": ""
+    "region:": "Merkaz",
+    "city": "Tel Aviv",
+    "email": "TaliA@continuitysoftware.com",
+    "language": "english"
   },
-   {
+  {
     "id": 3,
-    "groupName": "group number 1",
-    "groupLink": "https:\/\/www.google.com",
-    "postContent": "This is a post number 1. post number 1 text is long like hell. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no. no no no",
-    "jobType"	: "full",
-    "precentage" : "100",
-    "region:": "merkaz",
-    "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "groupName": "משרות מחברות היי-טק בישראל",
+    "groupLink": "https://www.facebook.com/groups/israel.hitech.jobs/",
+    "postStoryNumber": "10153447623430807",
+    "postContent": "לחברה בתחום התקשרות האלחוטית היושבת בתל אביב דרוש/ה מפתח/ת FPGA דרישות: תואר ראשון/שני בהנדסת חשמל ואלקטרוניקה- חובה מעל 3 שנות ניסיון בפיתוח רכיבי FPGA - חובה כתיבת קוד ב Verilog- חובה לשליחת קורות חיים רלוונטים: merav.de-mayo@jobinfo.co.il",
+    "jobType"	: "",
+    "precentage" : "",
+    "region:": "Merkaz",
+    "city": "Tel Aviv",
+    "email": "TaliA@continuitysoftware.com",
+    "language": "hebrew"
   },
      {
     "id": 4,
@@ -42,7 +47,8 @@
     "precentage" : "100",
     "region:": "merkaz",
     "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "email": "dvora@omer.co.il",
+    "language": "english"
   },
      {
     "id": 5,
@@ -53,7 +59,8 @@
     "precentage" : "100",
     "region:": "merkaz",
     "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "email": "dvora@omer.co.il",
+    "language": "english"
   },
      {
     "id": 6,
@@ -64,7 +71,8 @@
     "precentage" : "100",
     "region:": "merkaz",
     "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "email": "dvora@omer.co.il",
+    "language": "english"
   },
      {
     "id": 7,
@@ -75,7 +83,8 @@
     "precentage" : "100",
     "region:": "merkaz",
     "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "email": "dvora@omer.co.il",
+    "language": "english"
   },
      {
     "id": 8,
@@ -86,7 +95,8 @@
     "precentage" : "100",
     "region:": "merkaz",
     "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "email": "dvora@omer.co.il",
+    "language": "english"
   },
        {
     "id": 9,
@@ -97,7 +107,8 @@
     "precentage" : "100",
     "region:": "merkaz",
     "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "email": "dvora@omer.co.il",
+    "language": "english"
   },
        {
     "id": 10,
@@ -108,6 +119,7 @@
     "precentage" : "100",
     "region:": "merkaz",
     "city": "tel aviv",
-    "email": "dvora@omer.co.il"
+    "email": "dvora@omer.co.il",
+    "language": "english"
   }
 ]
