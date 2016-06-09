@@ -234,13 +234,13 @@ var JobPost = React.createClass({
 			.map( (field, i) => {
 				if (field[0] == 'email')
 					return(
-						<div key={i} className = 'jobDetails clickable' onClick={this.handlePostClick.bind(null, event, 'mailto:'+this.props.data.email)}>
+						<div key={i+5} className = 'jobDetails clickable' onClick={this.handlePostClick.bind(null, event, 'mailto:'+this.props.data.email)}>
 							{field[1] + ': '}
 							<u> {this.props.data[field[0]]} </u>
 						</div>
 						);
 				return (
-					<div className = 'jobDetails' key={i}>
+					<div className = 'jobDetails' key={i+5}>
 						{field[1] + ': ' + this.props.data[field[0]]}
 					</div>
 					);
@@ -253,6 +253,7 @@ var JobPost = React.createClass({
 		console.log("working_manner " + working_manner);
 		if(working_manner == "0")
 			working_manner = "Full time";
+		else if(working_manner == "1")
 			working_manner = "Part time";
 		else
 			working_manner = "Temp";
@@ -261,19 +262,19 @@ var JobPost = React.createClass({
 		return(
 			<div className = 'jobPost' onClick={this.handlePostClick}>
 				<div className = 'groupTitle'>
-					<div className = 'jobDetails clickable' onClick={
+					<div className = 'jobDetails clickable' key='1' onClick={
 						this.handlePostClick.bind(null, event,
 							"https://www.facebook.com/groups/" + this.props.data.group_id)}>
 						<u>{this.props.data.group_name}</u>
 					</div>
-					<div className = 'jobDetails'>
-						<u>published at: {this.props.data.publish_date}</u>
+					<div className = 'jobDetails' key='2'>
+						<u>Published at: {this.props.data.publish_date}</u>
 					</div>
-					<div className = 'jobDetails'>
-						<u>work type: {working_manner}</u>
+					<div className = 'jobDetails' key='3'>
+						<u>Work type: {working_manner}</u>
 					</div>
-					<div className = 'jobDetails'>
-						<u>employment form: {employment_form}</u>
+					<div className = 'jobDetails' key='4'>
+						<u>Employment form: {employment_form}</u>
 					</div>
 					{optionalDetailsNode}
 				</div>
