@@ -12,6 +12,7 @@ import json
 import sys
 import os
 import time
+import pymysql
 from flask import Flask, Response, request
 
 app = Flask(__name__, static_url_path='', static_folder='public')
@@ -50,25 +51,6 @@ def cities_handler():
 @app.route('/api/states', methods=['GET', 'POST'])
 def states_handler():
     return static_handler('States', 'state_name')
-
-def static_handler_old(itemName):
-    #all this part should be sql
-    with open('jsons/' + itemName + '.json', 'r') as f:
-        items = json.loads(f.read())
-    if request.method == 'POST':
-        itemsQuery = request.data['q'].lower()
-    else:
-        itemsQuery = request.args['q'].lower()
-    filtered_items = filter(lambda item: ( item['name'].lower().startswith(itemsQuery)) , items)
-
-    return Response(
-        json.dumps(filtered_items),
-        mimetype='application/json',
-        headers={
-            'Cache-Control': 'no-cache',
-            'Access-Control-Allow-Origin': '*'
-        }
-    )
 
 def static_handler(tableName, name_column):
     conn = pymysql.connect(host='mysqlsrv.cs.tau.ac.il', port=3306, user='DbMysql15', passwd='DbMysql15', db='DbMysql15', autocommit=True)
