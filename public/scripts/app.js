@@ -70,7 +70,7 @@ var SearchBar = React.createClass({
 		this.replaceState(newState);
 	},
 	componentDidMount: function(){
-		var jobtypes = [{'id': '0', 'name': 'Full-time'}, {'id': '1', 'name': 'Part-time'}, {'id': '2', 'name': 'Temp'}]
+		var jobtypes = [{'id': '0', 'name': 'Full-time'}, {'id': '1', 'name': 'Part-time'}, {'id': '2', 'name': 'Temp'}];
 		var all_items_checked = jobtypes.map(function(item){
 			item.checked = true;
 			return item;
