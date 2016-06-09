@@ -9,6 +9,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
+import sys
 import os
 import time
 from flask import Flask, Response, request
@@ -85,4 +86,4 @@ def jobtypes_handler():
 
 
 if __name__ == '__main__':
-    app.run(port=int(os.environ.get("PORT", 3000)))
+    app.run(host=sys.argv[1],port=int(os.environ.get("PORT",int(sys.argv[2]) )))
