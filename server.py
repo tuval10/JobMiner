@@ -10,6 +10,7 @@
 
 import json
 import sys
+import pymysql
 import os
 import time
 from flask import Flask, Response, request
@@ -28,9 +29,7 @@ def jopposts_handler():
         print keywords.split(' ')
         filtered_posts = jobposts
         for word in keywords.split(' '):
-            filtered_posts = filter(lambda jobpost: (word in jobpost['postContent'].split(' ') != -1) , filtered_posts)
-
-    return Response(
+            filtered_posts = filter(lambdamap
         json.dumps(filtered_posts if request.method == 'POST' else jobposts),
         mimetype='application/json',
         headers={
@@ -41,17 +40,17 @@ def jopposts_handler():
 
 @app.route('/api/companies', methods=['GET', 'POST'])
 def companies_handler():
-    return static_handler('companies')
+    return static_handler('Companies', 'company_name')
 
 @app.route('/api/cities', methods=['Get','POST'])
 def cities_handler():
-    return static_handler('cities')
+    return static_handler('Cities', 'city_name')
 
 @app.route('/api/states', methods=['GET', 'POST'])
 def states_handler():
-    return static_handler('states')
+    return static_handler('States', 'state_name')
 
-def static_handler(itemName):
+def static_handler_old(itemName):
     #all this part should be sql
     with open('jsons/' + itemName + '.json', 'r') as f:
         items = json.loads(f.read())
@@ -63,6 +62,28 @@ def static_handler(itemName):
 
     return Response(
         json.dumps(filtered_items),
+        mimetype='application/json',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Access-Control-Allow-Origin': '*'
+        }
+    )
+
+def static_handler(tableName, name_column):
+    conn = pymysql.connect(host='mysqlsrv.cs.tau.ac.il', port=3306, user='DbMysql15', passwd='DbMysql15', db='DbMysql15', autocommit=True)
+    cur = conn.cursor()
+    if request.method == 'POST':
+        itemsQuery = request.data['q'].lower()
+    else:
+        itemsQuery = request.args['q'].lower()
+    #get city list from DB
+    cur.execute("SELECT * FROM " + tableName.title()+ " WHERE " + name_column + " Like '" + itemsQuery + "%'")
+    returnedList = [];
+    for row in cur:
+        returnedList.append({'id': row[0], 'name': row[1]})
+    cur.close()
+    return Response(
+        json.dumps(returnedList),
         mimetype='application/json',
         headers={
             'Cache-Control': 'no-cache',
@@ -83,6 +104,7 @@ def jobtypes_handler():
             'Access-Control-Allow-Origin': '*'
         }
     )
+
 
 
 if __name__ == '__main__':

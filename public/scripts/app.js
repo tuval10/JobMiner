@@ -129,7 +129,6 @@ var SearchBar = React.createClass({
 					onToggleAll={this.handleJobTypeToggleAll} />
 				{itemListsNodes}
 	  		<div className='menu-item menu-button' onClick={this.handleSubmit}>search</div>
-	  		<div className='menu-item menu-button'>add group</div>
 			</div>
 		);
 	}
