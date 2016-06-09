@@ -86,11 +86,9 @@ def static_handler(tableName, name_column):
         itemsQuery = request.args['q'].lower()
     #get city list from DB
     cur.execute("SELECT * FROM " + tableName.title()+ " WHERE " + name_column + " Like '" + itemsQuery + "%'")
-    returnedList = MySqlToJson(cur)
-    print returnedList
-    # returnedList = [];
-    # for row in cur:
-    #     returnedList.append({'id': row[0], 'name': row[1]})
+    returnedList = [];
+    for row in cur:
+        returnedList.append({'id': row[0], 'name': row[1]})
     cur.close()
     return Response(
         json.dumps(returnedList),
