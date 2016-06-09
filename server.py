@@ -10,7 +10,6 @@
 
 import json
 import sys
-import pymysql
 import os
 import time
 from flask import Flask, Response, request
@@ -29,7 +28,9 @@ def jopposts_handler():
         print keywords.split(' ')
         filtered_posts = jobposts
         for word in keywords.split(' '):
-            filtered_posts = filter(lambdamap
+            filtered_posts = filter(lambda jobpost: (word in jobpost['postContent'].split(' ') != -1) , filtered_posts)
+
+    return Response(
         json.dumps(filtered_posts if request.method == 'POST' else jobposts),
         mimetype='application/json',
         headers={
