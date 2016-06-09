@@ -13,18 +13,17 @@ import sys
 import os
 import time
 import pymysql
+from itertools import izip
 from flask import Flask, Response, request
 
 app = Flask(__name__, static_url_path='', static_folder='public')
 app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 
-@app.route('/api/jobposts', methods=['GET', 'POST'])
-def jopposts_handler():
+def jopposts_handler2():
     conn = pymysql.connect(host='mysqlsrv.cs.tau.ac.il', port=3306, user='DbMysql15', passwd='DbMysql15', db='DbMysql15', autocommit=True)
     cur = conn.cursor()
 
     if request.method == 'GET':
-        itemsQuery = request.data['q'].lower()
         cur.execute("SELECT * FROM JobPost")
         returnedList = cur.fetchall()
     else:
@@ -44,7 +43,8 @@ def jopposts_handler():
         }
     )
 
-def jopposts_handler2():
+@app.route('/api/jobposts', methods=['GET', 'POST'])
+def jopposts_handler():
     with open('jsons/jobposts.json', 'r') as f:
         jobposts = json.loads(f.read())
     if request.method == 'POST':
@@ -87,6 +87,7 @@ def static_handler(tableName, name_column):
     #get city list from DB
     cur.execute("SELECT * FROM " + tableName.title()+ " WHERE " + name_column + " Like '" + itemsQuery + "%'")
     returnedList = MySqlToJson(cur)
+    print returnedList
     # returnedList = [];
     # for row in cur:
     #     returnedList.append({'id': row[0], 'name': row[1]})
@@ -103,7 +104,7 @@ def static_handler(tableName, name_column):
 def MySqlToJson(cursor):
     """Returns all rows from a cursor as a list of dicts"""
     desc = cursor.description
-    return [dict(itertools.izip([col[0] for col in desc], row))
+    return [dict(izip([col[0] for col in desc], row))
             for row in cursor.fetchall()]
 
 if __name__ == '__main__':
