@@ -50,8 +50,7 @@ var Page = React.createClass({
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ searchbar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 var itemLists = ['states', 'cities', 'companies'];
-var optional = new Array(itemLists);
-optional.push(['email','email']);
+var optional = ['state_name', 'city_name', 'company_name', 'email'];
 var SearchBar = React.createClass({
 	getInitialState: function() {
 		var newJson = {keywords: '', jobtypes: []};
@@ -250,19 +249,39 @@ var JobPost = React.createClass({
 	},
 	render: function(){
 		var optionalDetailsNode = this.getOptionalPostDetails();
+		var working_manner = this.props.data.working_manner;
+		console.log("working_manner " + working_manner);
+		if(working_manner == "0")
+			working_manner = "Full time";
+			working_manner = "Part time";
+		else
+			working_manner = "Temp";
+		var employment_form = this.props.data.employment_form == "0" ? "Company" : "Home";
 
 		return(
 			<div className = 'jobPost' onClick={this.handlePostClick}>
 				<div className = 'groupTitle'>
-					<div className = 'jobDetails clickable' onClick={this.handlePostClick.bind(null, event, this.props.data.groupLink)}>
-						<u>{this.props.data.groupName}</u>
+					<div className = 'jobDetails clickable' onClick={
+						this.handlePostClick.bind(null, event,
+							"https://www.facebook.com/groups/" + this.props.data.group_id)}>
+						<u>{this.props.data.group_name}</u>
+					</div>
+					<div className = 'jobDetails'>
+						<u>published at: {this.props.data.publish_date}</u>
+					</div>
+					<div className = 'jobDetails'>
+						<u>work type: {working_manner}</u>
+					</div>
+					<div className = 'jobDetails'>
+						<u>employment form: {employment_form}</u>
 					</div>
 					{optionalDetailsNode}
 				</div>
 				<div className = 'postContent'
-					onClick={this.handlePostClick.bind(null, event, this.props.data.groupLink+'permalink/'+this.props.data.postStoryNumber)}
+					onClick={this.handlePostClick.bind(null, event,
+						'https://www.facebook.com/groups/'+this.props.data.group_id+'/permalink/'+this.props.data.post_story_id)}
 				>
-					{this.props.children}
+					{this.props.data.full_post_body}
 				</div>
 			</div>
 		);
