@@ -19,20 +19,18 @@ from flask import Flask, Response, request
 app = Flask(__name__, static_url_path='', static_folder='public')
 app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 
-def jopposts_handler2():
+@app.route('/api/jobposts', methods=['GET', 'POST'])
+def jopposts_handler():
     conn = pymysql.connect(host='mysqlsrv.cs.tau.ac.il', port=3306, user='DbMysql15', passwd='DbMysql15', db='DbMysql15', autocommit=True)
     cur = conn.cursor()
 
     if request.method == 'GET':
         cur.execute("SELECT * FROM JobPost")
-        returnedList = cur.fetchall()
+        returnedList = MySqlToJson(cur)
     else:
         itemsQuery = request.args['q'].lower()
-    #get city list from DB
-
-    returnedList = [];
-    for row in cur:
-        returnedList.append({'id': row[0], 'name': row[1]})
+        returnedList = [];
+    print returnedList
     cur.close()
     return Response(
         json.dumps(returnedList),
@@ -43,8 +41,8 @@ def jopposts_handler2():
         }
     )
 
-@app.route('/api/jobposts', methods=['GET', 'POST'])
-def jopposts_handler():
+
+def jopposts_handler2():
     with open('jsons/jobposts.json', 'r') as f:
         jobposts = json.loads(f.read())
     if request.method == 'POST':
