@@ -1,14 +1,14 @@
 [
 	{
 		"id":"1",
-		"name":"משרה מלאה"
+		"name":"Full time"
 	},
 	{
 		"id":"2",
-		"name":"משרה חלקית"
+		"name":"Part time"
 	},
 	{
 		"id":"3",
-		"name":"משרה זמנית"
+		"name":"Temp"
 	}
 ]

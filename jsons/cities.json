@@ -1,14 +1,14 @@
 [
 	{
 		"id":"1",
-		"name":"תל אביב"
+		"name": "new york"
 	},
 	{
 		"id":"2",
-		"name":"באר שבע"
+		"name":"chicago"
 	},
 	{
 		"id":"3",
-		"name":"חיפה"
+		"name":"new orleans"
 	}
 ]

@@ -19,17 +19,15 @@ app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 @app.route('/api/jobposts', methods=['GET', 'POST'])
 def jopposts_handler():
     with open('jsons/jobposts.json', 'r') as f:
-        jobposts = json.loads(f.read()) 
-        
+        jobposts = json.loads(f.read())
     if request.method == 'POST':
-        print "request data to POST search:"
-        print request.data
-        keywords = json.loads(request.data)['keywords']
-        print keywords
+        itemsQuery = request.data;
+        print itemsQuery
+        keywords = json.loads(itemsQuery)['keywords']
+        print keywords.split(' ')
         filtered_posts = jobposts
         for word in keywords.split(' '):
-            filtered_posts = filter(lambda jobpost: (str(jobpost).find(word) != -1) , filtered_posts)
-        
+            filtered_posts = filter(lambda jobpost: (word in jobpost['postContent'].split(' ') != -1) , filtered_posts)
 
     return Response(
         json.dumps(filtered_posts if request.method == 'POST' else jobposts),
@@ -39,42 +37,31 @@ def jopposts_handler():
             'Access-Control-Allow-Origin': '*'
         }
     )
-    
+
 @app.route('/api/companies', methods=['GET', 'POST'])
 def companies_handler():
-    with open('jsons/companies.json', 'r') as f:
-        companies = json.loads(f.read()) 
+    return static_handler('companies')
 
-    return Response(
-        json.dumps(companies),
-        mimetype='application/json',
-        headers={
-            'Cache-Control': 'no-cache',
-            'Access-Control-Allow-Origin': '*'
-        }
-    )
-    
-@app.route('/api/cities', methods=['GET', 'POST'])
+@app.route('/api/cities', methods=['Get','POST'])
 def cities_handler():
-    with open('jsons/cities.json', 'r') as f:
-        cities = json.loads(f.read()) 
+    return static_handler('cities')
+
+@app.route('/api/states', methods=['GET', 'POST'])
+def states_handler():
+    return static_handler('states')
+
+def static_handler(itemName):
+    #all this part should be sql
+    with open('jsons/' + itemName + '.json', 'r') as f:
+        items = json.loads(f.read())
+    if request.method == 'POST':
+        itemsQuery = request.data['q'].lower()
+    else:
+        itemsQuery = request.args['q'].lower()
+    filtered_items = filter(lambda item: ( item['name'].lower().startswith(itemsQuery)) , items)
 
     return Response(
-        json.dumps(cities),
-        mimetype='application/json',
-        headers={
-            'Cache-Control': 'no-cache',
-            'Access-Control-Allow-Origin': '*'
-        }
-    )
-    
-@app.route('/api/regions', methods=['GET', 'POST'])
-def regions_handler():
-    with open('jsons/regions.json', 'r') as f:
-        regions = json.loads(f.read()) 
-
-    return Response(
-        json.dumps(regions),
+        json.dumps(filtered_items),
         mimetype='application/json',
         headers={
             'Cache-Control': 'no-cache',
@@ -85,7 +72,7 @@ def regions_handler():
 @app.route('/api/jobtypes', methods=['GET', 'POST'])
 def jobtypes_handler():
     with open('jsons/jobtypes.json', 'r') as f:
-        jobtypes = json.loads(f.read()) 
+        jobtypes = json.loads(f.read())
 
     return Response(
         json.dumps(jobtypes),

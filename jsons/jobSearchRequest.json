@@ -4,8 +4,8 @@
 post request:
 {
 	"keywords": [],
-	"region_ids": "[]",
-	"su_region": true,
+	"state_ids": "[]",
+	"su_state": true,
 	"city_ids": "[]",
 	"su_city": true,
 	"company_ids": "[]",
@@ -29,7 +29,7 @@ response:
     "postContent": "This is a post number 1",
     "jobType"	: "full"
     "precentage" : "100",
-    "region:": "merkaz",
+    "state:": "merkaz",
     "city": "tel aviv"
   },
   {
@@ -40,7 +40,7 @@ response:
     "precentage" : "",
     "jobType"	: "temp"
     "precentage" : "",
-    "region:": "merkaz",
+    "state:": "merkaz",
     "city": ""
   }
 ]

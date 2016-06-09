@@ -12,7 +12,7 @@ var Page = React.createClass({
 			}.bind(this),
 			error: function(xhr, status, err) {
 				console.error(this.props.url, status, err.toString());
-			}.bind(this)		
+			}.bind(this)
 		});
 	},
 	onSubmitSearchQuery: function(query, callback){
@@ -32,7 +32,7 @@ var Page = React.createClass({
 			}.bind(this),
 			error: function(xhr, status, err) {
 				console.error(this.props.url, status, err.toString());
-			}.bind(this)	
+			}.bind(this)
 		});
 	},
 	componentDidMount: function(){
@@ -41,7 +41,7 @@ var Page = React.createClass({
 	render: function(){
 		return(
 			<div className='page'>
-				<SearchBar onSearchSubmit={this.onSubmitSearchQuery}/>
+				<SearchBar onSearchSubmit={this.onSubmitSearchQuery} />
 				<JobPostList data={this.state.data} />
 			</div>
 		);
@@ -49,144 +49,110 @@ var Page = React.createClass({
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ searchbar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-var itemLists = [['jobtypes', 'סוג משרה'], ['regions', 'אזורים'], ['cities','ערים'], ['companies','חברות']];
-
+var itemLists = ['states', 'cities', 'companies'];
+var optional = new Array(itemLists);
+optional.push(['email','email']);
 var SearchBar = React.createClass({
 	getInitialState: function() {
-		var newJson = {keywords: ''};
-		var listJsons = itemLists.forEach((list) => {
-			var jsonObj = {
-				'data': [],
-				'includeUndef': true
-			};
-			var listJsonObj = {};
-			newJson[list[0]] = jsonObj;
-		});
-		
+		var newJson = {keywords: '', jobtypes: []};
 		return newJson;
-	},
-	onlyPartTimeJobChecked: function(){
-		var jobtypesChosen = this.state[[itemLists[0][0]]].data.filter( item => item.checked);
-		if(jobtypesChosen.length != 1)
-			return false;
-		return jobtypesChosen[0].id == 2;
-	},
-	handleSliderVisibility: function(){
-		document.getElementById('sliderDiv').style['visibility'] = 
-			(! this.onlyPartTimeJobChecked()) ? 'hidden' : 'visible';
 	},
 	clearSearchBar: function(){
 		var newState = this.state;
 		newState['keywords'] = '';
 		itemLists.forEach((list) => {
-			var listChecked = newState[list[0]].data.map( item => {
-				item.checked = true;
-				return item;
-			}); 
-			newState[list[0]].data = listChecked;
-			newState[list[0]].includeUndef = true;
+			$('#'+ list).tokenInput("clear");
+		});
+		newState['jobtypes'] = this.state.jobtypes.map(item => {
+			item.checked = true;
+			return item;
 		});
 		this.replaceState(newState);
 	},
-	updateList: function(listName, listData, includeUndef){
-		var newState = {};
-		newState[listName] = {};
-		newState[listName].data = listData;
-		newState[listName].includeUndef = includeUndef;
-		if(listName == 'jobtypes')
-			this.handleSliderVisibility();
-		this.setState(newState);
-	},
-	loadListsFromServer: function(){
-		itemLists.forEach( list => {
-			$.ajax({
-				url: '/api/' + list[0],
-				dataType: 'json',
-				cache: false,
-				success: function(data){
-					var all_items_checked = data.map(function(item){
-						item.checked = true;
-						return item;
-					});
-					this.updateList(list[0], all_items_checked, true);
-				}.bind(this),
-				error: function(xhr, status, err) {
-					console.error(this.props.url, status, err.toString());
-				}.bind(this)		
-			});
-		});	
+	loadJobtypesFromServer: function(){
+		$.ajax({
+			url: '/api/jobtypes',
+			dataType: 'json',
+			cache: false,
+			success: function(data)
+			{
+				var all_items_checked = data.map(function(item){
+					item.checked = true;
+					return item;
+				});
+				this.setState({'jobtypes' : all_items_checked});
+			}.bind(this),
+			error: function(xhr, status, err) {
+				console.error(this.props.url, status, err.toString());
+			}.bind(this)
+		});
 	},
 	componentDidMount: function(){
-		this.loadListsFromServer();
-	},
-	formatListData: function(list){
-		if(list.data.filter(item => (!item.checked)).length == 0)
-			return [];
-		else	
-			return list.data.filter(item => (item.checked)).map( item => item.id );
+		this.loadJobtypesFromServer();
 	},
 	handleKeywordsChange: function(event) {
     	this.setState({keywords: event.target.value});
     },
-	handleSubmit: function(e){	
+	handleSubmit: function(e){
 		var request = {};
-		request['keywords'] = this.state.keywords;
+		if(this.state.keywords != "")
+			request['keywords'] = this.state.keywords;
+		var listRequestData = this.state['jobtypes'].filter(item => (item.checked)).map( item => item.id );
+		if(listRequestData.length != 3)
+			request['jobtypes'] = listRequestData;
 		itemLists.forEach((list) => {
-			var listRequestData = this.formatListData(this.state[list[0]]);
-			if(listRequestData.length != 0 || !this.state[list[0]].includeUndef)
-			{
-				request[list[0]] = {};
-				request[list[0]].data = listRequestData;
-				request[list[0]].includeUndef = this.state[list[0]].includeUndef;
-			}
+			var ids = $('#'+ list).tokenInput("get").map(item => item.id);
+			if(ids.length != 0)
+				request[list] = ids;
 		});
-		if(this.onlyPartTimeJobChecked()){
-			request.job_precentage = {};
-			request.job_precentage['min'] = document.getElementById('value-min').innerHTML;
-			request.job_precentage['max'] = document.getElementById('value-max').innerHTML;
-		}
-		this.props.onSearchSubmit(request, this.clearSearchBar);	
+		this.props.onSearchSubmit(request, this.clearSearchBar);
 	},
-	handleOptionToggle: function(listName, item_id){
-		var newListData = this.state[listName].data.map(function(item){
+	handleJobTypeOptionToggle: function(item_id){
+		var newState = {};
+		newState['jobtypes'] = this.state['jobtypes'].map(function(item){
 			if(item.id == item_id)
 				item.checked = ! item.checked;
 			return item;
 		});
-		this.updateList(listName, newListData, this.state[listName].includeUndef);
-	},
-	handleToggleAll: function(listName, checkedValue){
-		var listChecked = this.state[listName].data.map( item => {
-			item.checked = checkedValue;
-			return item;
-		}); 
-		this.updateList(listName, listChecked, this.state[listName].includeUndef);
-	},
-	handleUndefToggle: function(listName){
-		this.updateList(listName, this.state[listName].data, ! this.state[listName].includeUndef);
+		this.setState(newState);
 	},
 	render: function(){
 		var itemListsNodes = itemLists.map(function(list,i){
 			return (
-				<ItemsList key={i} url={'/api/' + list[0]} listName={list[1]} listEnName={list[0]} 
-					items={this.state[list[0]].data} includeUndef={this.state[list[0]].includeUndef} 
-					onOptionToggle={this.handleOptionToggle} onToggleAll={this.handleToggleAll} 
-					undef={this.state[list[0]].includeUndef} onUndefToggle={this.handleUndefToggle} />
+				<InputAutocomplete  key={i}  name={list} />
 			);
 		}.bind(this));
 		return (
 			<div className='searchbar'>
 				<SearchLine value={this.state.keywords} onChange={this.handleKeywordsChange}/>
+				<JobTypeItemsList items={this.state['jobtypes']} onOptionToggle={this.handleJobTypeOptionToggle}
+					onToggleAll={this.handleJobTypeToggleAll} />
 				{itemListsNodes}
-				 <div id='sliderDiv' className='sliderWrapper'>
-				  	<div><span id="value-min" className='sliderValue'></span></div>
-				  	<div id='range'></div>
-					<div><span id="value-max" className='sliderValue'></span></div>
-					<div className='precentage-word'>אחוז משרה:</div>
-				</div>
-		  		<div className='menu-item menu-button' onClick={this.handleSubmit}>חפש</div>
-		  		<div className='menu-item menu-button'>הוסף קבוצה</div>
+	  		<div className='menu-item menu-button' onClick={this.handleSubmit}>search</div>
+	  		<div className='menu-item menu-button'>add group</div>
 			</div>
+		);
+	}
+});
+
+var InputAutocomplete = React.createClass({
+  componentDidMount: function() {
+    $("#"+this.props.name).tokenInput('/api/' + this.props.name,
+			{
+				searchDelay: 0,
+				minChars: 1,
+				tokenLimit: 5,
+				hintText: "choose " +  this.props.name,
+				noResultsText: "not found",
+				searchingText: "..."
+			}
+	);
+  },
+	render: function(){
+		return(
+      <div>
+          <input type="text" id={this.props.name} name={this.props.name} placeholder={'choose '+this.props.name}/>
+      </div>
 		);
 	}
 });
@@ -195,18 +161,20 @@ var SearchLine = React.createClass({
 	render: function() {
 		return (
 			<div className='searchword-container'>
-				<div className='searchword'>חפש: </div>
-				<input type="text" className='menu-search-line' value={this.props.value} onChange={this.props.onChange} placeholder="אנא הזן טקסט לחיפוש"/>
+				<div className='searchword'>search: </div>
+				<input type="text" className='menu-search-line' value={this.props.value} onChange={this.props.onChange} placeholder="please enter keywords"/>
 			</div>
 		);
 	}
 });
 
-var ItemsList = React.createClass({
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JobTypeItemsList ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+var JobTypeItemsList = React.createClass({
 	getInitialState: function(){
 		return {data:[]};
 	},
-	render: function(){	
+	render: function(){
 		if(this.props.items == undefined){
 			return(
 				<div className='menu-container menu-dropdown'>
@@ -214,29 +182,20 @@ var ItemsList = React.createClass({
 					<div className="menu-options-container"></div>
 				</div>
 			);
-		}	
+		}
 		var	items_nodes = this.props.items.map(function(item){
 				return (
-					<ItemOption key={item.id} id={item.id} name={item.name} 
-						onOptionToggle={this.props.onOptionToggle.bind(null , this.props.listEnName)} 
+					<ItemOption key={item.id} id={item.id} name={item.name}
+						onOptionToggle={this.props.onOptionToggle}
 						checked={item.checked} />
-				);	
+				);
 		}.bind(this));
-		var undefClass = (this.props.undef) ? "checkbox checkedCheckbox" : "checkbox uncheckedCheckbox";
 		return(
 			<div className='menu-container menu-dropdown'>
-				<div className="menu-item item-name">{this.props.listName}</div>
+				<div className="menu-item item-name">Job Type</div>
 				<div className="menu-options-container">
-					<div className='menu-item menu-option opt' onClick={this.props.onToggleAll.bind(null, this.props.listEnName, true)} >בחר הכל</div>
-					<div className='menu-item menu-option opt' onClick={this.props.onToggleAll.bind(null, this.props.listEnName, false)} >נקה הכל</div>
-					<div className="menu-item menu-option opt" onClick={this.props.onUndefToggle.bind(null, this.props.listEnName)} >
-		  				<div className="menu-option-name">הצג תוצאות ללא</div>
-		  				<div className="menuOptionCheckbox">
-							<label className={undefClass}></label>
-						</div>
-		  			</div>
 					{items_nodes}
-	  			</div>
+  			</div>
 			</div>
 		);
 	}
@@ -253,7 +212,7 @@ var ItemOption = React.createClass({
 				</div>
   			</div>
 		);
-		
+
 	}
 });
 
@@ -268,7 +227,7 @@ var JobPostList = React.createClass({
 				</JobPost>
 				);
 		});
-		
+
 		return(
 			<div className = 'jobPostList'>
 				{jobPostNodes}
@@ -286,7 +245,6 @@ var JobPost = React.createClass({
   		}
 	},
 	getOptionalPostDetails: function(){
-		var optional = [['jobType', 'סוג עבודה'], ['precentage', 'אחוז משרה'], ['region','אזור'], ['city','עיר'], ['email','מייל']];
 		var optionalNodes = optional.filter(field => (this.props.data[field[0]] != undefined && this.props.data[field[0]].length != 0))
 			.map( (field, i) => {
 				if (field[0] == 'email')
@@ -306,7 +264,7 @@ var JobPost = React.createClass({
 	},
 	render: function(){
 		var optionalDetailsNode = this.getOptionalPostDetails();
-		
+
 		return(
 			<div className = 'jobPost' onClick={this.handlePostClick}>
 				<div className = 'groupTitle'>
@@ -316,7 +274,6 @@ var JobPost = React.createClass({
 					{optionalDetailsNode}
 				</div>
 				<div className = 'postContent'
-					style= {{direction: (this.props.data.language=='english' ? 'ltr' : 'rtl')}} 
 					onClick={this.handlePostClick.bind(null, event, this.props.data.groupLink+'permalink/'+this.props.data.postStoryNumber)}
 				>
 					{this.props.children}
@@ -331,25 +288,3 @@ ReactDOM.render(
 	<Page url='/api/jobposts' /> ,
 	document.getElementById('content')
 );
-
-// slider outside 
-var range = document.getElementById('range');
-noUiSlider.create(range, {
-	start: [ 0, 100 ], // Handle start position
-	step: 20, // Slider moves in increments of '10'
-	margin: 0, // Handles must be more than '20' apart
-	connect: true, // Display a colored bar between the handles
-	behaviour: 'tap-drag', // Move handle on tap, bar is draggable
-	range: { // Slider can select '0' to '100'
-		'min': 0,
-		'max': 100
-	}
-});
-
-var valueDivs = [document.getElementById('value-min'), document.getElementById('value-max')]
-
-// When the slider value changes, update the input and span
-range.noUiSlider.on('update', function( values, handle ) {
-	valueDivs[handle].innerHTML = values[handle].replace('.00','') + '%';
-});
-

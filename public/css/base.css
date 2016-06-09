@@ -1,4 +1,4 @@
-body 
+body
 {
     margin: 0;
     padding: 0;
@@ -7,16 +7,16 @@ body
     background-repeat:no-repeat;
     background-size:cover;
     background-attachment: fixed;
-    direction: rtl;
+    direction: ltr;
     color: white;
 }
 
 /* Menu Option Checkbox */
 .menuOptionCheckbox {
-	width: 20px;	
+	width: 20px;
 	position: relative;
 	display: inline-block;
-    padding: 0px 10px 15px 0px;
+    padding: 0px 25px 15px 0px;
 	text-align: right;
 }
 
@@ -114,28 +114,39 @@ body
 	display: inline;
 	color:white;
 	padding: 0px 20px;
+  font-size: 18px;
+}
+
+input, ul, p
+{
+    color: white;
+    background-color: #333;
+    border-radius: 5px;
+    border: 1px solid white;
+    font-size: 18px;
+    text-align: center;
+    line-height: 35px;
+    margin: 2px;
+}
+
+input
+{
+  height: 35px;
 }
 
 .menu-search-line
 {
-	height: 35px;
-	line-height: 35px;
-	display: inline;
-	background-color: #333;
-    text-align: center;
-    border-radius: 5px;
-    border: 1px solid white;
-    margin: 2px;
+  display: inline;
 }
 
 .menu-search-line:hover
 {
-	background-color: #111;	
+	background-color: #111;
 }
 
 .menu-item
 {
-	font-size: 13px;
+	font-size: 18px;
 	height: 40px;
 	line-height: 40px;
 	background-color: #333;
@@ -206,7 +217,7 @@ body
 
 .menuOptionCheckbox
 {
-	
+
 }
 
 .menu-button
