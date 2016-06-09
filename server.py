@@ -20,6 +20,31 @@ app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 
 @app.route('/api/jobposts', methods=['GET', 'POST'])
 def jopposts_handler():
+    conn = pymysql.connect(host='mysqlsrv.cs.tau.ac.il', port=3306, user='DbMysql15', passwd='DbMysql15', db='DbMysql15', autocommit=True)
+    cur = conn.cursor()
+
+    if request.method == 'GET':
+        itemsQuery = request.data['q'].lower()
+        cur.execute("SELECT * FROM JobPost")
+        returnedList = cur.fetchall()
+    else:
+        itemsQuery = request.args['q'].lower()
+    #get city list from DB
+
+    returnedList = [];
+    for row in cur:
+        returnedList.append({'id': row[0], 'name': row[1]})
+    cur.close()
+    return Response(
+        json.dumps(returnedList),
+        mimetype='application/json',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Access-Control-Allow-Origin': '*'
+        }
+    )
+
+def jopposts_handler2():
     with open('jsons/jobposts.json', 'r') as f:
         jobposts = json.loads(f.read())
     if request.method == 'POST':
@@ -61,9 +86,10 @@ def static_handler(tableName, name_column):
         itemsQuery = request.args['q'].lower()
     #get city list from DB
     cur.execute("SELECT * FROM " + tableName.title()+ " WHERE " + name_column + " Like '" + itemsQuery + "%'")
-    returnedList = [];
-    for row in cur:
-        returnedList.append({'id': row[0], 'name': row[1]})
+    returnedList = MySqlToJson(cur)
+    # returnedList = [];
+    # for row in cur:
+    #     returnedList.append({'id': row[0], 'name': row[1]})
     cur.close()
     return Response(
         json.dumps(returnedList),
@@ -73,6 +99,12 @@ def static_handler(tableName, name_column):
             'Access-Control-Allow-Origin': '*'
         }
     )
+
+def MySqlToJson(cursor):
+    """Returns all rows from a cursor as a list of dicts"""
+    desc = cursor.description
+    return [dict(itertools.izip([col[0] for col in desc], row))
+            for row in cursor.fetchall()]
 
 if __name__ == '__main__':
     app.run(host=sys.argv[1],port=int(os.environ.get("PORT",int(sys.argv[2]) )))
