@@ -69,26 +69,13 @@ var SearchBar = React.createClass({
 		});
 		this.replaceState(newState);
 	},
-	loadJobtypesFromServer: function(){
-		$.ajax({
-			url: '/api/jobtypes',
-			dataType: 'json',
-			cache: false,
-			success: function(data)
-			{
-				var all_items_checked = data.map(function(item){
-					item.checked = true;
-					return item;
-				});
-				this.setState({'jobtypes' : all_items_checked});
-			}.bind(this),
-			error: function(xhr, status, err) {
-				console.error(this.props.url, status, err.toString());
-			}.bind(this)
-		});
-	},
 	componentDidMount: function(){
-		this.loadJobtypesFromServer();
+		var jobtypes = [{'id': '0', 'name': 'Full-time'}, {'id': '1', 'name': 'Part-time'}, {'id': '2', 'name': 'Temp'}]
+		var all_items_checked = jobtypes.map(function(item){
+			item.checked = true;
+			return item;
+		});
+		this.setState({'jobtypes' : all_items_checked});
 	},
 	handleKeywordsChange: function(event) {
     	this.setState({keywords: event.target.value});

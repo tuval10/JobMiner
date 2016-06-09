@@ -74,21 +74,5 @@ def static_handler(tableName, name_column):
         }
     )
 
-@app.route('/api/jobtypes', methods=['GET', 'POST'])
-def jobtypes_handler():
-    with open('jsons/jobtypes.json', 'r') as f:
-        jobtypes = json.loads(f.read())
-
-    return Response(
-        json.dumps(jobtypes),
-        mimetype='application/json',
-        headers={
-            'Cache-Control': 'no-cache',
-            'Access-Control-Allow-Origin': '*'
-        }
-    )
-
-
-
 if __name__ == '__main__':
     app.run(host=sys.argv[1],port=int(os.environ.get("PORT",int(sys.argv[2]) )))
