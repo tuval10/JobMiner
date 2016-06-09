@@ -29,11 +29,9 @@ def jopposts_handler():
         returnedList = MySqlToJson(cur)
     else:
         itemsQuery = request.args['q'].lower()
-        returnedList = [];
-    print returnedList
-
-    print json.dumps([str(item) for item in returnedList]) 
+        returnedList = []; 
     cur.close()
+    returnedList = [{k: str(v) for k, v in jobpost.items()} for jobpost in returnedList]
     return Response(
         json.dumps(returnedList),
         mimetype='application/json',
@@ -101,10 +99,10 @@ def static_handler(tableName, name_column):
         }
     )
 
-def MySqlToJson(cur):
+def MySqlToJson(cursor):
     """Returns all rows from a cursor as a list of dicts"""
-    return  [dict((cur.description[i][0], value.) \
-               for i, value in enumerate(row)) for row in cur.fetchall()]
+    desc = cursor.description
+    return [dict(izip([col[0] for col in desc], row)) for row in cursor.fetchall()]
 
 if __name__ == '__main__':
     app.run(host=sys.argv[1],port=int(os.environ.get("PORT",int(sys.argv[2]) )))
