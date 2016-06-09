@@ -31,6 +31,7 @@ def jopposts_handler():
         itemsQuery = request.args['q'].lower()
         returnedList = [];
     print returnedList
+    print json.dumps(returnedList) 
     cur.close()
     return Response(
         json.dumps(returnedList),
@@ -40,6 +41,7 @@ def jopposts_handler():
             'Access-Control-Allow-Origin': '*'
         }
     )
+    conn.close()
 
 
 def jopposts_handler2():
@@ -88,6 +90,7 @@ def static_handler(tableName, name_column):
     for row in cur:
         returnedList.append({'id': row[0], 'name': row[1]})
     cur.close()
+    conn.close()
     return Response(
         json.dumps(returnedList),
         mimetype='application/json',
