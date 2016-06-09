@@ -205,9 +205,9 @@ var ItemOption = React.createClass({
 
 var JobPostList = React.createClass({
 	render: function(){
-		var jobPostNodes = this.props.data.map(function(jobPost){
+		var jobPostNodes = this.props.data.map(function(jobPost, i){
 			return(
-				<JobPost key={jobPost.id} data={jobPost}>
+				<JobPost key={i} data={jobPost}>
 					{jobPost.postContent}
 				</JobPost>
 				);
