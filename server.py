@@ -53,10 +53,10 @@ def get_100_newest_post(cur, formsReq):
     cur.execute(q)
 
 def get_forms_req(itemQuery):
-    if 'forms' not in itemQuery:
+    if 'jobtypes' not in itemQuery:
         return "(0 , 1, 2)"
     else:
-        return array_to_query_string(itemQuery['forms'])
+        return array_to_query_string(itemQuery['jobtypes'])
 
 def get_posts_from_query(itemQuery, cur):
     itemQuery = json.loads(itemQuery)
@@ -67,6 +67,7 @@ def get_posts_from_query(itemQuery, cur):
     keywords = keywords.lower().split()
     #no search criteria or only keywords
     forms = get_forms_req(itemQuery)
+    print "forms" + forms
     if 'states' not in itemQuery and 'cities' not in itemQuery and 'companies' not in itemQuery:
         if 'keywords' in itemQuery:
             search_only_keywords(keywords, cur)

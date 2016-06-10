@@ -292,6 +292,12 @@ a
 	text-decoration: none;
 }
 
+.altText
+{
+  text-align: center;
+  color: black;
+}
+
 .clickable
 {
 	cursor: pointer;

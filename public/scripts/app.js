@@ -204,7 +204,23 @@ var ItemOption = React.createClass({
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JobPostList ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 var JobPostList = React.createClass({
+	getInitialState: function(){
+		return ({searchCommited: false});
+	},
+	componentDidMount: function(){
+		this.state.searchCommited = true;
+	},
 	render: function(){
+		if(this.props.data.length == 0)
+		return(
+			<div className = 'jobPostList'>
+				<div className = 'altText'>
+					<h1 className = 'not-found'>
+					{this.state.searchCommited ? "Sorry, nothing was found :(" : "Loading"}
+					</h1>
+				</div>
+			</div>
+		);
 		var jobPostNodes = this.props.data.map(function(jobPost, i){
 			return(
 				<JobPost key={i} data={jobPost}>
@@ -268,7 +284,8 @@ var JobPost = React.createClass({
 			? story_id
 			: story_id.substring(story_id.indexOf('_')+1, story_id.length);
 		return(
-			<div className = 'jobPost' onClick={this.handlePostClick}>
+			<div className = 'jobPost clickable' 	onClick={this.handlePostClick.bind(null, event,
+									'https://www.facebook.com/groups/'+this.props.data.group_fb_id+'/permalink/'+story_id)}>
 				<div className = 'groupTitle'>
 					<div className = 'jobDetails clickable groupName' key='1' onClick={
 						this.handlePostClick.bind(null, event,
@@ -284,10 +301,7 @@ var JobPost = React.createClass({
 					{working_manner_div}
 					{optionalDetailsNode}
 				</div>
-				<div className = 'postContent'
-					onClick={this.handlePostClick.bind(null, event,
-						'https://www.facebook.com/groups/'+this.props.data.group_fb_id+'/permalink/'+story_id)}
-				>
+				<div className = 'postContent'>
 					{this.props.data.full_post_body}
 				</div>
 			</div>
