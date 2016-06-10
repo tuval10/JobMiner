@@ -50,7 +50,6 @@ var Page = React.createClass({
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ searchbar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 var itemLists = ['states', 'cities', 'companies'];
-var optional = ['state_name', 'city_name', 'company_name', 'email'];
 var SearchBar = React.createClass({
 	getInitialState: function() {
 		var newJson = {keywords: '', jobtypes: []};
@@ -135,7 +134,7 @@ var InputAutocomplete = React.createClass({
   },
 	render: function(){
 		return(
-      <div>
+      <div className='autocomplete-container'>
           <input type="text" id={this.props.name} name={this.props.name} placeholder={'choose '+this.props.name}/>
       </div>
 		);
@@ -146,7 +145,7 @@ var SearchLine = React.createClass({
 	render: function() {
 		return (
 			<div className='searchword-container'>
-				<div className='searchword'>search: </div>
+				<div className='searchword'>Search: </div>
 				<input type="text" className='menu-search-line' value={this.props.value} onChange={this.props.onChange} placeholder="please enter keywords"/>
 			</div>
 		);
@@ -195,7 +194,7 @@ var ItemOption = React.createClass({
   				<div className="menuOptionCheckbox">
 					<label className={checkboxClass}></label>
 				</div>
-  			</div>
+			</div>
 		);
 
 	}
@@ -221,6 +220,7 @@ var JobPostList = React.createClass({
 	}
 });
 
+var optional = [['state_name', 'State'], ['city_name', 'City'], [ 'company_name', 'Company'], [ 'email', 'Email' ]];
 
 var JobPost = React.createClass({
 	handlePostClick: function(event, link){
@@ -232,15 +232,18 @@ var JobPost = React.createClass({
 	getOptionalPostDetails: function(){
 		var optionalNodes = optional.filter(field => (this.props.data[field[0]] != undefined && this.props.data[field[0]].length != 0))
 			.map( (field, i) => {
-				if (field[0] == 'email')
+				if (field[0] == 'email'){
+					if( this.props.data['email'] == 'None')
+						return ;
 					return(
-						<div key={i+5} className = 'jobDetails clickable' onClick={this.handlePostClick.bind(null, event, 'mailto:'+this.props.data.email)}>
+						<div key={i+5} className = 'jobDetails clickable blue' onClick={this.handlePostClick.bind(null, event, 'mailto:'+this.props.data.email)}>
 							{field[1] + ': '}
-							<u> {this.props.data[field[0]]} </u>
+							<u> {this.props.data['email']} </u>
 						</div>
 						);
+				}
 				return (
-					<div className = 'jobDetails' key={i+5}>
+					<div className = 'jobDetails inline-info' key={i+5}>
 						{field[1] + ': ' + this.props.data[field[0]]}
 					</div>
 					);
@@ -249,38 +252,40 @@ var JobPost = React.createClass({
 	},
 	render: function(){
 		var optionalDetailsNode = this.getOptionalPostDetails();
-		var working_manner = this.props.data.working_manner;
-		console.log("working_manner " + working_manner);
-		if(working_manner == "0")
-			working_manner = "Full time";
-		else if(working_manner == "1")
-			working_manner = "Part time";
+		var employment_form;
+		if(this.props.data.employment_form == "0")
+			employment_form = "Full time";
+		else if(this.props.data.employment_form == "1")
+			employment_form = "Part time";
 		else
-			working_manner = "Temp";
-		var employment_form = this.props.data.employment_form == "0" ? "Company" : "Home";
-
+			employment_form = "Temp";
+		var working_manner_div = (this.props.data.working_manner == "0") ? "" :
+			(<div className = 'jobDetails' key={4}>Working from home
+			</div>);
+		var story_id = this.props.data.post_story_id
+		story_id = (story_id.indexOf('_') == -1)
+			? story_id
+			: story_id.substring(story_id.indexOf('_')+1, story_id.length);
 		return(
 			<div className = 'jobPost' onClick={this.handlePostClick}>
 				<div className = 'groupTitle'>
-					<div className = 'jobDetails clickable' key='1' onClick={
+					<div className = 'jobDetails clickable groupName' key='1' onClick={
 						this.handlePostClick.bind(null, event,
-							"https://www.facebook.com/groups/" + this.props.data.group_id)}>
+							"https://www.facebook.com/groups/" + this.props.data.group_fb_id)}>
 						<u>{this.props.data.group_name}</u>
 					</div>
 					<div className = 'jobDetails' key='2'>
-						<u>Published at: {this.props.data.publish_date}</u>
+						Published at: {this.props.data.publish_date}
 					</div>
 					<div className = 'jobDetails' key='3'>
-						<u>Work type: {working_manner}</u>
+						Work type: {employment_form}
 					</div>
-					<div className = 'jobDetails' key='4'>
-						<u>Employment form: {employment_form}</u>
-					</div>
+					{working_manner_div}
 					{optionalDetailsNode}
 				</div>
 				<div className = 'postContent'
 					onClick={this.handlePostClick.bind(null, event,
-						'https://www.facebook.com/groups/'+this.props.data.group_id+'/permalink/'+this.props.data.post_story_id)}
+						'https://www.facebook.com/groups/'+this.props.data.group_fb_id+'/permalink/'+story_id)}
 				>
 					{this.props.data.full_post_body}
 				</div>

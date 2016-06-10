@@ -21,17 +21,23 @@ app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 
 @app.route('/api/jobposts', methods=['GET', 'POST'])
 def jopposts_handler():
+    print "handler"
     conn = pymysql.connect(host='mysqlsrv.cs.tau.ac.il', port=3306, user='DbMysql15', passwd='DbMysql15', db='DbMysql15', autocommit=True)
     cur = conn.cursor()
 
     if request.method == 'GET':
-        cur.execute("SELECT * FROM JobPost")
-        returnedList = MySqlToJson(cur)
+        print "get";
+        get_100_newest_post(cur, get_forms_req({}))
     else:
-        itemsQuery = request.args['q'].lower()
-        returnedList = []; 
+        print "post";
+        get_posts_from_query(request.data, cur)
+    returnedList = MySqlToJson(cur)
+    for row in returnedList:
+        print row[0]
     cur.close()
+    conn.close()
     returnedList = [{k: str(v) for k, v in jobpost.items()} for jobpost in returnedList]
+    print json.dumps(returnedList)
     return Response(
         json.dumps(returnedList),
         mimetype='application/json',
@@ -40,29 +46,127 @@ def jopposts_handler():
             'Access-Control-Allow-Origin': '*'
         }
     )
-    conn.close()
 
 
-def jopposts_handler2():
-    with open('jsons/jobposts.json', 'r') as f:
-        jobposts = json.loads(f.read())
-    if request.method == 'POST':
-        itemsQuery = request.data;
-        print itemsQuery
-        keywords = json.loads(itemsQuery)['keywords']
-        print keywords.split(' ')
-        filtered_posts = jobposts
-        for word in keywords.split(' '):
-            filtered_posts = filter(lambda jobpost: (word in jobpost['postContent'].split(' ') != -1) , filtered_posts)
+def get_100_newest_post(cur, formsReq):
+    print formsReq
+    q= ("SELECT JobPost.post_story_id, JobPost.publish_date, JobPost.employment_form, JobPost.working_manner, JobPost.email, JobPost.full_post_body, Groups.group_name, Groups.group_fb_id, Companies.company_name, Cities.city_name, States.state_name " +
+        "FROM JobPost, JobPostGroup, Groups, JobPostCompany, Companies, JobPostCity, Cities, JobPostState, States " +
+        "WHERE JobPost.post_id = JobPostGroup.post_id AND JobPost.post_id = JobPostCompany.post_id AND JobPost.post_id = JobPostCity.post_id AND JobPost.post_id = JobPostState.post_id AND JobPostGroup.group_id = Groups.group_id AND JobPostCompany.company_id = Companies.company_id AND JobPostCity.city_id = Cities.city_id AND JobPostState.state_id = States.state_id AND JobPost.employment_form IN " + formsReq +  " ORDER BY publish_date DESC LIMIT 100")
+    print q
+    cur.execute(q)
 
-    return Response(
-        json.dumps(filtered_posts if request.method == 'POST' else jobposts),
-        mimetype='application/json',
-        headers={
-            'Cache-Control': 'no-cache',
-            'Access-Control-Allow-Origin': '*'
-        }
-    )
+def get_forms_req(itemQuery):
+    if 'forms' not in itemQuery:
+        return "(0 , 1, 2)"
+    else:
+        return array_to_query_string(itemQuery['forms'])
+
+def get_posts_from_query(itemQuery, cur):
+    print itemQuery
+    itemQuery = json.loads(itemQuery)
+    print itemQuery
+    reqNum = 0
+    innerSqlReq = []
+    innerSql_WO_Req = []
+    keywords = itemQuery['keywords'] if 'keywords' in itemQuery else ""
+    print 'keywords1 ' + keywords
+    keywords = keywords.lower().split()
+    #no search criteria or only keywords
+    forms = get_forms_req(itemQuery)
+    print "forms " + forms
+    if 'states' not in itemQuery and 'cities' not in itemQuery and 'companies' not in itemQuery:
+        if 'keywords' in itemQuery:
+            print "keywords"
+            search_only_keyword(keywords, cur)
+        else:
+            print "no keywords"
+            get_100_newest_post(cur, forms);
+        return
+    if 'companies' in itemQuery:
+        innerSqlReq.append(get_companies_query(itemQuery['companies']))
+    else:
+        innerSql_WO_Req.append(
+            "SELECT post_id, company_name FROM JobPostCompany " +
+            "LEFT JOIN Companies " +
+            "ON JobPostCompany.company_id = Companies.company_id"
+            )
+    if 'cities' in itemQuery:
+        innerSqlReq.append(get_cities_query(itemQuery['cities']))
+    else:
+        innerSql_WO_Req.append(
+            "SELECT post_id, city_name FROM JobPostCity " +
+            "LEFT JOIN Cities " +
+            "ON JobPostCity.city_id = Cities.city_id"
+        )
+    if 'states' in itemQuery:
+        innerSqlReq.append(get_states_query(itemQuery['states']))
+        reqNum += 1
+    else:
+        innerSql_WO_Req.append(
+            "SELECT post_id, state_name FROM JobPostState " +
+            "LEFT JOIN States " +
+            "ON JobPostState.state_id = States.state_id"
+        )
+    joins =  ['JOIN', 'JOIN'] if (innerSqlReq.length == 2) else ['JOIN', 'LEFT JOIN']
+    for innerQuery in innerSqlReq:
+        innerSqlOrder.append(innerQuery)
+    for innerQuery in innerSql_WO_Req:
+        innerSqlOrder.append(innerQuery)
+    joinsQuery = "SELECT A1.post_id, city_name, company_name, state_name, post_story_id, publish_date, employment_form, working_manner, email, full_post_body, A5.group_fb_id, A5.group_name FROM ("
+    joinsQuery += innerSqlOrder[0] + ") AS A1 "+joins[0]+" ("
+    joinsQuery += innerSqlOrder[1] + ") AS A2 ON A1.post_id = A2.post_id "+joins[1]+" (" + innerSqlOrder[2]
+    joinsQuery += ") AS A3 ON A1.post_id = A3.post_id "
+    joinsQuery += "LEFT JOIN JobPost AS A4 ON A1.post_id = A4.post_id "
+    joinsQuery += "LEFT JOIN (SELECT  post_id, group_fb_id, group_name FROM Groups, JobPostGroup WHERE Groups.group_id = JobPostGroup.group_id ) AS A5 ON A1.post_id = A5.post_id"
+    joinsQuery += "WHERE A4.employment_form IN " + forms +  " ORDER BY A4.publish_date DESC LIMIT 100"
+    print joinsQuery
+    cur.execute(joinsQuery)
+
+def array_to_query_string(array):
+    concated = ""
+    for word in array:
+        concated += (str(word) + ", ")
+    concated = concated[0:len(concated) - 2]
+    return '(' + concated + ')'
+
+def get_companies_query(companies_ids):
+    companiesQuery = array_to_query_string(companies_ids)
+    print "companiesQuery: " + companiesQuery
+    return ("SELECT post_id, company_name FROM JobPostCompany " +
+        "LEFT JOIN Companies " +
+        "ON JobPostCompany.company_id = Companies.company_id " +
+        "WHERE Companies.company_id IN " + companiesQuery)
+
+def get_cities_query(cities_ids):
+    citisQuery = array_to_query_string(cities_ids)
+    print "citisQuery: " + citisQuery
+    return ("SELECT post_id, city_name FROM JobPostCity " +
+        "LEFT JOIN Cities " +
+        "ON JobPostCity.city_id = Cities.city_id " +
+        "WHERE Cities.city_id IN " + citisQuery)
+
+def get_states_query(state_ids):
+    statesQuery = array_to_query_string(state_ids)
+    print "statesQuery: " + statesQuery
+    return ("SELECT post_id, state_name FROM JobPostState " +
+    "LEFT JOIN States " +
+    "ON JobPostState.state_id = States.state_id " +
+    "WHERE States.state_id IN " + statesQuery)
+
+
+def search_only_keyword(words, cur):
+    for word in words:
+        print word
+    print "search_only_keyword"
+    concated = ""
+    for word in words:
+        concated += ("+" + word + " ")
+    concated = concated[0:len(concated) - 1]
+    print concated
+    query = "SELECT JobPost.post_story_id, JobPost.publish_date, JobPost.employment_form, JobPost.working_manner, JobPost.email, JobPost.full_post_body, Groups.group_name, Groups.group_fb_id, Companies.company_name, Cities.city_name, States.state_name FROM JobPost, JobPostGroup, Groups, JobPostCompany, Companies, JobPostCity, Cities, JobPostState, States WHERE MATCH(full_post_body) AGAINST('" + concated + "' IN BOOLEAN MODE) AND JobPost.post_id = JobPostGroup.post_id AND JobPost.post_id = JobPostCompany.post_id AND JobPost.post_id = JobPostCity.post_id AND JobPost.post_id = JobPostState.post_id AND JobPostGroup.group_id = Groups.group_id AND JobPostCompany.company_id = Companies.company_id AND JobPostCity.city_id = Cities.city_id AND JobPostState.state_id = States.state_id AND JobPost.employment_form IN (1, 2, 3) ORDER BY publish_date LIMIT 100"
+    print query
+    cur.execute(query)
 
 @app.route('/api/companies', methods=['GET', 'POST'])
 def companies_handler():
@@ -105,4 +209,6 @@ def MySqlToJson(cursor):
     return [dict(izip([col[0] for col in desc], row)) for row in cursor.fetchall()]
 
 if __name__ == '__main__':
-    app.run(host=sys.argv[1],port=int(os.environ.get("PORT",int(sys.argv[2]) )))
+    #switch to run localy
+    app.run(port=int(os.environ.get("PORT", 3000)))
+    # app.run(host=sys.argv[1],port=int(os.environ.get("PORT",int(sys.argv[2]) )))
