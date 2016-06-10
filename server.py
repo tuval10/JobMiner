@@ -24,20 +24,16 @@ def jopposts_handler():
     print "handler"
     conn = pymysql.connect(host='mysqlsrv.cs.tau.ac.il', port=3306, user='DbMysql15', passwd='DbMysql15', db='DbMysql15', autocommit=True)
     cur = conn.cursor()
-
     if request.method == 'GET':
         print "get";
         get_100_newest_post(cur, get_forms_req({}))
     else:
         print "post";
         get_posts_from_query(request.data, cur)
-    returnedList = MySqlToJson(cur)
-    for row in returnedList:
-        print row[0]
+    returnedList = MySqlToJson2(cur)
     cur.close()
     conn.close()
     returnedList = [{k: str(v) for k, v in jobpost.items()} for jobpost in returnedList]
-    print json.dumps(returnedList)
     return Response(
         json.dumps(returnedList),
         mimetype='application/json',
@@ -63,62 +59,54 @@ def get_forms_req(itemQuery):
         return array_to_query_string(itemQuery['forms'])
 
 def get_posts_from_query(itemQuery, cur):
-    print itemQuery
     itemQuery = json.loads(itemQuery)
-    print itemQuery
-    reqNum = 0
     innerSqlReq = []
     innerSql_WO_Req = []
+    innerSqlOrder = []
     keywords = itemQuery['keywords'] if 'keywords' in itemQuery else ""
-    print 'keywords1 ' + keywords
     keywords = keywords.lower().split()
     #no search criteria or only keywords
     forms = get_forms_req(itemQuery)
-    print "forms " + forms
     if 'states' not in itemQuery and 'cities' not in itemQuery and 'companies' not in itemQuery:
         if 'keywords' in itemQuery:
-            print "keywords"
-            search_only_keyword(keywords, cur)
+            search_only_keywords(keywords, cur)
         else:
-            print "no keywords"
             get_100_newest_post(cur, forms);
         return
     if 'companies' in itemQuery:
         innerSqlReq.append(get_companies_query(itemQuery['companies']))
     else:
-        innerSql_WO_Req.append(
+        q = (
             "SELECT post_id, company_name FROM JobPostCompany " +
             "LEFT JOIN Companies " +
             "ON JobPostCompany.company_id = Companies.company_id"
             )
+        innerSql_WO_Req.append(q)
     if 'cities' in itemQuery:
         innerSqlReq.append(get_cities_query(itemQuery['cities']))
     else:
-        innerSql_WO_Req.append(
-            "SELECT post_id, city_name FROM JobPostCity " +
-            "LEFT JOIN Cities " +
-            "ON JobPostCity.city_id = Cities.city_id"
-        )
+        q = ("SELECT post_id, city_name FROM JobPostCity " +
+        "LEFT JOIN Cities " +
+        "ON JobPostCity.city_id = Cities.city_id")
+        innerSql_WO_Req.append(q)
     if 'states' in itemQuery:
         innerSqlReq.append(get_states_query(itemQuery['states']))
-        reqNum += 1
     else:
-        innerSql_WO_Req.append(
-            "SELECT post_id, state_name FROM JobPostState " +
+        q = ("SELECT post_id, state_name FROM JobPostState " +
             "LEFT JOIN States " +
-            "ON JobPostState.state_id = States.state_id"
-        )
-    joins =  ['JOIN', 'JOIN'] if (innerSqlReq.length == 2) else ['JOIN', 'LEFT JOIN']
+            "ON JobPostState.state_id = States.state_id")
+        innerSql_WO_Req.append(q)
+    joins =  ['JOIN', 'JOIN'] if (len(innerSqlReq) == 2) else ['JOIN', 'LEFT JOIN']
     for innerQuery in innerSqlReq:
         innerSqlOrder.append(innerQuery)
     for innerQuery in innerSql_WO_Req:
         innerSqlOrder.append(innerQuery)
-    joinsQuery = "SELECT A1.post_id, city_name, company_name, state_name, post_story_id, publish_date, employment_form, working_manner, email, full_post_body, A5.group_fb_id, A5.group_name FROM ("
+    joinsQuery = "SELECT post_story_id, publish_date, employment_form, working_manner, email, full_post_body, A5.group_name, A5.group_fb_id, company_name, city_name, state_name FROM ("
     joinsQuery += innerSqlOrder[0] + ") AS A1 "+joins[0]+" ("
     joinsQuery += innerSqlOrder[1] + ") AS A2 ON A1.post_id = A2.post_id "+joins[1]+" (" + innerSqlOrder[2]
     joinsQuery += ") AS A3 ON A1.post_id = A3.post_id "
     joinsQuery += "LEFT JOIN JobPost AS A4 ON A1.post_id = A4.post_id "
-    joinsQuery += "LEFT JOIN (SELECT  post_id, group_fb_id, group_name FROM Groups, JobPostGroup WHERE Groups.group_id = JobPostGroup.group_id ) AS A5 ON A1.post_id = A5.post_id"
+    joinsQuery += "LEFT JOIN (SELECT  post_id, group_fb_id, group_name FROM Groups, JobPostGroup WHERE Groups.group_id = JobPostGroup.group_id ) AS A5 ON A1.post_id = A5.post_id "
     joinsQuery += "WHERE A4.employment_form IN " + forms +  " ORDER BY A4.publish_date DESC LIMIT 100"
     print joinsQuery
     cur.execute(joinsQuery)
@@ -155,17 +143,12 @@ def get_states_query(state_ids):
     "WHERE States.state_id IN " + statesQuery)
 
 
-def search_only_keyword(words, cur):
-    for word in words:
-        print word
-    print "search_only_keyword"
+def search_only_keywords(words, cur):
     concated = ""
     for word in words:
         concated += ("+" + word + " ")
     concated = concated[0:len(concated) - 1]
-    print concated
     query = "SELECT JobPost.post_story_id, JobPost.publish_date, JobPost.employment_form, JobPost.working_manner, JobPost.email, JobPost.full_post_body, Groups.group_name, Groups.group_fb_id, Companies.company_name, Cities.city_name, States.state_name FROM JobPost, JobPostGroup, Groups, JobPostCompany, Companies, JobPostCity, Cities, JobPostState, States WHERE MATCH(full_post_body) AGAINST('" + concated + "' IN BOOLEAN MODE) AND JobPost.post_id = JobPostGroup.post_id AND JobPost.post_id = JobPostCompany.post_id AND JobPost.post_id = JobPostCity.post_id AND JobPost.post_id = JobPostState.post_id AND JobPostGroup.group_id = Groups.group_id AND JobPostCompany.company_id = Companies.company_id AND JobPostCity.city_id = Cities.city_id AND JobPostState.state_id = States.state_id AND JobPost.employment_form IN (1, 2, 3) ORDER BY publish_date LIMIT 100"
-    print query
     cur.execute(query)
 
 @app.route('/api/companies', methods=['GET', 'POST'])
@@ -202,6 +185,25 @@ def static_handler(tableName, name_column):
             'Access-Control-Allow-Origin': '*'
         }
     )
+
+def MySqlToJson2(cursor):
+    rows = []
+    for row in cursor:
+        dict1 = {}
+        dict1['post_story_id'] = str(row[0])
+        dict1['publish_date'] = str(row[1])
+        dict1['employment_form'] = str(row[2])
+        dict1['working_manner'] = str(row[3])
+        dict1['email'] = str(row[4])
+        dict1['full_post_body'] = str(row[5])
+        dict1['group_name'] = str(row[6])
+        dict1['group_fb_id'] = str(row[7])
+        dict1['company_name'] = str(row[8])
+        dict1['city_name'] = str(row[9])
+        dict1['state_name'] = str(row[10])
+        rows.append(dict1)
+    return rows
+
 
 def MySqlToJson(cursor):
     """Returns all rows from a cursor as a list of dicts"""
