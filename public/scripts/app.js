@@ -253,7 +253,7 @@ var JobPost = React.createClass({
 					if( this.props.data['email'] == 'None')
 						return ;
 					return(
-						<div key={i+5} className = 'jobDetails clickable blue' onClick={this.handlePostClick.bind(null, event, 'mailto:'+this.props.data.email)}>
+						<div key={i+5} className = 'jobDetails clickable blue' onClick={this.handlePostClick.bind(null, null, 'mailto:'+this.props.data.email)}>
 							{field[1] + ': '}
 							<u> {this.props.data['email']} </u>
 						</div>
@@ -284,11 +284,11 @@ var JobPost = React.createClass({
 			? story_id
 			: story_id.substring(story_id.indexOf('_')+1, story_id.length);
 		return(
-			<div className = 'jobPost clickable' 	onClick={this.handlePostClick.bind(null, event,
+			<div className = 'jobPost clickable' 	onClick={this.handlePostClick.bind(null, null,
 									'https://www.facebook.com/groups/'+this.props.data.group_fb_id+'/permalink/'+story_id)}>
 				<div className = 'groupTitle'>
 					<div className = 'jobDetails clickable groupName' key='1' onClick={
-						this.handlePostClick.bind(null, event,
+						this.handlePostClick.bind(null, null,
 							"https://www.facebook.com/groups/" + this.props.data.group_fb_id)}>
 						<u>{this.props.data.group_name}</u>
 					</div>
